@@ -1,4 +1,5 @@
 <launch>
+    <!-- Arguments -->
     <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
     <arg name="x_pos" default="-1.5"/>
     <arg name="y_pos" default="-4.0"/>
@@ -20,6 +21,16 @@
     <!-- Launch rviz, loading configuration file -->
     <node name="rviz" pkg="rviz" type="rviz" args="--display-config $(find robutler_bringup)/config/visualization.rviz" required="false"/>
 
+    <!-- Start teleop -->
     <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering" args="-t" output="screen"/>
+    <!-- <node pkg="robutler_bringup" type="teleop.py" name="teleop"  output="screen"/> -->
+
+
+    <!-- Mapping -->
+    <include file="$(find robutler_navigation)/launch/localization.launch">
+        <arg name="initial_pose_x" value="$(arg x_pos)"/>
+        <arg name="initial_pose_y" value="$(arg y_pos)"/>
+    </include>
+    <include file="$(find robutler_navigation)/launch/move_base.launch"/>
 
 </launch>
