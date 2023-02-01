@@ -35,7 +35,7 @@ def movebaseClient(x, y, r):
         rospy.logerr("Action server not available!")
         rospy.signal_shutdown("Action server not available!")
     else:
-        return client.get_result()   
+        return client.get_result()
 
 
 if __name__ == "__main__":
