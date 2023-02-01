@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 
-#import move
-
 import os
 import rospy
 import json
 from functools import partial
 
-
 # Menus
 from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
-
-
 
 # Move to goal
 import actionlib
@@ -21,9 +16,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from nav_msgs.msg import Odometry
 
 
-# Global server
+# Global variables
 server = None
-
 
 
 def readJsonFile(path):
