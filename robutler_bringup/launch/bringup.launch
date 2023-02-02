@@ -34,6 +34,6 @@
     <include file="$(find robutler_navigation)/launch/move_base.launch"/>
 
     <!-- Right click menu -->
-    <node pkg="robutler_navigation" type="menu.py" name="move_menu" />
+    <node pkg="robutler_bringup" type="menu.py" name="move_menu" />
 
 </launch>

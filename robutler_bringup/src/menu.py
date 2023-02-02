@@ -13,7 +13,6 @@ from visualization_msgs.msg import *
 # Move to goal
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from nav_msgs.msg import Odometry
 
 
 # Global variables
