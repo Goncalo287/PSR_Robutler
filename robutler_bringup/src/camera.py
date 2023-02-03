@@ -24,11 +24,17 @@ def detect_purple_sphere(img):
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # Draw a circle around the detected sphere
+    spheres_detected = False
     for contour in contours:
         (x, y), radius = cv2.minEnclosingCircle(contour)
         center = (int(x), int(y))
         radius = int(radius)
         img = cv2.circle(img, center, radius, (0, 255, 0), 2)
+        spheres_detected = True
+
+    if spheres_detected:
+        # Display image with message
+        cv2.putText(img, "Here's a purple sphere", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     return img
 
@@ -42,9 +48,6 @@ def image_callback(msg):
 
     # Detect purple sphere
     img = detect_purple_sphere(img)
-
-    # Display image with message
-    cv2.putText(img, "Here's a purple sphere", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     cv2.imshow("Robutler's Camera", img)
 
     # Keyboard inputs
