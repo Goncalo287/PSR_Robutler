@@ -41,34 +41,38 @@ def detect_purple_sphere(img):
 def image_callback(msg):
     # Convert image to opencv
     try:
-        img_original = bridge.imgmsg_to_cv2(msg, "bgr8")
+        img = bridge.imgmsg_to_cv2(msg, "bgr8")
     except CvBridgeError as e:
         print('Failed to convert image:', e)
         return
 
     # Detect purple sphere
-    img_sphere = detect_purple_sphere(img_original)
-    cv2.imshow("Robutler's Camera", img_sphere)
+    img = detect_purple_sphere(img)
+    cv2.imshow("Robutler's Camera", img)
 
     # Detect objects
-    img_yolo = image_classification(img_original)
-    cv2.imshow("Jota Tela", img_yolo)
+    # img = image_classification(img)
+    # cv2.imshow("Jota Tela", img)
     
     # Keyboard inputs
     key = cv2.waitKey(10) & 0xFF
 
     if key == ord('q') or key == 27:    # Q or ESC to exit
-        cv2.destroyAllWindows()
         pass
 
-def image_classification():
+def image_classification(img):
     
-    net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
+    net = cv2.dnn.readNet("/home/jota/catkin_ws/src/YOLO/yolov3.weights", "/home/jota/catkin_ws/src/YOLO/yolov3.cfg")
     classes = []
-    with open("coco.names", "r") as f:
-        classes = [line.strip() for line in f.readlines()]
-    layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    # with open("/home/jota/catkin_ws/src/YOLO/coco.names", "r") as f:
+    #     classes = [line.strip() for line in f.readlines()]
+    classes = open("/home/jota/catkin_ws/src/YOLO/coco.names").read().strip().split('\n')
+    #print(classes)
+    
+    # determine the output layer
+    ln = net.getLayerNames()
+    ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
     
     # Loading image
@@ -113,6 +117,7 @@ def image_classification():
             cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
             cv2.putText(img, label, (x, y + 30), font, 3, color, 3)
     
+    return img
 
 def main():
     # Image subscriber
