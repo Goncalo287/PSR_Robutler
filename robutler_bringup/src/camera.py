@@ -61,8 +61,11 @@ def main():
     rospy.init_node('camera', anonymous=True)
     rospy.Subscriber("/camera/rgb/image_raw", Image, image_callback)
 
-    # Spin until ctrl+c
-    rospy.spin()
+    # Keep ros awake (10Hz refresh rate)
+    while not rospy.is_shutdown():
+        rospy.sleep(10)
+
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()

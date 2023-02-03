@@ -113,7 +113,6 @@ def makeTextMarker(text = "Unknown", color = [0.5, 0.5, 0.5]):
     server.applyChanges()
 
 
-
 def goalDoneCallback(state, result):
     """
     Called when a goal is "done":
@@ -232,8 +231,8 @@ def spinCallback( _ ):
     publisher.publish(twist)
     makeTextMarker(text = "Idle")
 
+
 def AddCallback( _ ):
-    rospy.init_node('insert_object',log_level=rospy.INFO)
 
     # get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
@@ -246,7 +245,6 @@ def AddCallback( _ ):
                 'room':'large_bedroom', 'place': 'bed'})
     placements.append({'pose':Pose(position=Point(x=-7.33, y=5.29, z=0.58), orientation=Quaternion(x=0,y=0,z=0,w=1)),
                 'room':'large_bedroom', 'place': 'bedside_cabinet'})
-
 
     model_names = ['sphere_v']
 
@@ -263,6 +261,7 @@ def AddCallback( _ ):
     model_placement = random.choice(placements)
     name = model_name + '_in_' + model_placement['place'] + '_of_' + model_placement['room']
     spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
+
 
 def initMenu(menu_handler, goals_file):
     """
