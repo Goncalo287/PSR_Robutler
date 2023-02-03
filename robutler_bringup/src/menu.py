@@ -4,6 +4,7 @@ import os
 import rospy
 import json
 from functools import partial
+import math
 
 # Menus
 from interactive_markers.interactive_marker_server import *
@@ -13,7 +14,7 @@ from visualization_msgs.msg import *
 # Move to goal
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-
+from geometry_msgs.msg import Twist
 
 # Global variables
 server = None
@@ -31,7 +32,6 @@ def readJsonFile(path):
     except Exception:
         print("Invalid json file: " + path)
         return None
-
 
 
 def makeMenuMarker():
@@ -67,7 +67,6 @@ def makeMenuMarker():
     server.applyChanges()
 
 
-
 def makeTextMarker(text = "Unknown", color = [0.5, 0.5, 0.5]):
     """
     Display text above the robot
@@ -82,7 +81,7 @@ def makeTextMarker(text = "Unknown", color = [0.5, 0.5, 0.5]):
     # Text properties
     marker.text = text
     marker.scale.z = 0.37
-    marker.pose.position.z = 1.0
+    marker.pose.position.z = 0.75
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]
@@ -99,6 +98,9 @@ def makeTextMarker(text = "Unknown", color = [0.5, 0.5, 0.5]):
     control.markers.append(marker)
     int_marker.controls.append(control)
 
+    global server
+    if server is None:
+        server = InteractiveMarkerServer("menu")
     server.insert(int_marker)
     server.applyChanges()
 
@@ -117,7 +119,6 @@ def goalDoneCallback(state, result):
                         color = [0.3, 0.8, 0.3])
     else:
         print("Goal done: canceled")
-
 
 
 def moveToPosition(x, y, r):
@@ -144,7 +145,6 @@ def moveToPosition(x, y, r):
 
     # Send goal to the action server
     client.send_goal(goal, done_cb=goalDoneCallback)
-
 
 
 def moveCallback( _ , goal, goal_dict):
@@ -183,7 +183,6 @@ def moveCallback( _ , goal, goal_dict):
                         color = [0.8, 0.2, 0.2])
 
 
-
 def stopCallback( _ ):
     """
     Called when the user clicks the "Stop" button. Cancel goal
@@ -194,6 +193,36 @@ def stopCallback( _ ):
     makeTextMarker( text = "Goal canceled",
                     color = [0.8, 0.2, 0.2])
 
+
+def spinCallback( _ ):
+    """
+    Do a full rotation
+    """
+
+    publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+
+    twist = Twist()
+    twist.linear.x = 0
+
+    client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+    client.cancel_all_goals()
+
+    # Spin
+    makeTextMarker( text = "Spinning...",
+                    color = [0.2, 0.2, 0.8])
+
+    # Calculate spin duration from speed (rad/s)
+    rotation_speed = 0.75
+    time_end = rospy.get_rostime().secs + 2*math.pi/rotation_speed
+
+    while rospy.get_rostime().secs < time_end:
+        twist.angular.z = rotation_speed
+        publisher.publish(twist)
+
+    # Stop spinning
+    twist.angular.z = 0
+    publisher.publish(twist)
+    makeTextMarker(text = "Idle")
 
 
 def initMenu(menu_handler, goals_file):
@@ -216,7 +245,7 @@ def initMenu(menu_handler, goals_file):
         menu_handler.insert(goal, parent=move_tab, callback=partial(moveCallback, goal = goal, goal_dict = goal_dict))
 
     menu_handler.insert( "Stop", callback=stopCallback)
-
+    menu_handler.insert( "Spin", callback=spinCallback)
 
 
 def main():
@@ -231,6 +260,7 @@ def main():
     initMenu(menu_handler, goals_file="saved_locations.json")
     makeMenuMarker()
     menu_handler.apply(server, "menu_marker")
+    makeTextMarker(text = "Idle")
     server.applyChanges()
 
     # Spin until ctrl+c

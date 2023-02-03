@@ -4,19 +4,17 @@
 import rospy
 from menu import moveToPosition, makeTextMarker
 
-rospy.init_node("move")
+# Initialize node
+rospy.init_node("test")
 
 
 # Move to coordinates
-x = -2.5
-y = -4.5
-r = 1.0
-moveToPosition(x, y, r)
+moveToPosition( x = -2.1, y = -3.5, r = -1.5 )
 
 
+# Display text
+makeTextMarker( text = "Hello!", color = [0.3, 0.3, 0.9] )
 
-# Text doesn't work - error with using a global variable?
 
-# server = InteractiveMarkerServer("move")
-# makeTextMarker(text="Hello!", color=[0.3, 0.3, 0.9])
-# rospy.spin()
+# Spin until ctrl+c
+rospy.spin()
