@@ -25,6 +25,8 @@
     <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering" args="-t" output="screen"/>
     <!-- <node pkg="robutler_bringup" type="teleop.py" name="teleop"  output="screen"/> -->
 
+    <!-- Start Camera -->
+    <node pkg="robutler_bringup" type="camera.py" name="camera"/>
 
     <!-- Mapping -->
     <include file="$(find robutler_navigation)/launch/localization.launch">
