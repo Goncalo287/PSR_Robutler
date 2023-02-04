@@ -26,9 +26,12 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 import tkinter as tk
 from geometry_msgs.msg import PoseStamped
 
+from nav_msgs.msg import Odometry
+
 
 # Global variables
 server = None
+pose = None
 
 
 def readJsonFile(path):
@@ -131,9 +134,10 @@ def goalDoneCallback(state, result):
         print("Goal done: canceled")
 
 
-def moveToPosition(x, y, r):
+def moveToPosition(x, y, r, wait=False):
     """
     Move robot to 2D position (x, y) with rotation (r) in radians
+    Wait (bool): if the robot should delay other actions until it reaches the goal (False by default)
     """
     print("moving to position... {}, {}, {}".format(x, y, r))
 
@@ -157,8 +161,11 @@ def moveToPosition(x, y, r):
     # Send goal to the action server
     client.send_goal(goal, done_cb=goalDoneCallback)
 
+    if wait:
+        client.wait_for_result()
 
-def moveCallback( _ , goal, goal_dict):
+
+def moveCallback( _ , goal, goal_dict, wait=False):
     """
     Called when the user clicks a goal from the list. Move robot to that goal
     Inputs: goal: string, a key of goal_dict
@@ -179,11 +186,13 @@ def moveCallback( _ , goal, goal_dict):
                 valid_coords = False
         except KeyError:
             valid_coords = False
+    else:
+        valid_coords = False
 
     # If coordinates are valid, move to goal
     if valid_coords:
         print("New goal: " + goal)
-        moveToPosition(goal_x, goal_y, goal_r)
+        moveToPosition(goal_x, goal_y, goal_r, wait)
         makeTextMarker( text = "Moving to \"{}\"".format(goal),
                         color = [0.3, 0.8, 0.3])
 
@@ -254,7 +263,7 @@ def coordinatesCallback( _ ):
     y_entry = tk.Entry(root)
     y_entry.grid(row=1, column=1, padx=10, pady=10)
 
-    r_label = tk.Label(root, text="R:")
+    r_label = tk.Label(root, text="R (rad):")
     r_label.grid(row=2, column=0, padx=10, pady=10)
 
     r_entry = tk.Entry(root)
@@ -281,11 +290,10 @@ def coordinatesCallback( _ ):
                             color = [0.8, 0.2, 0.2] )
             return
 
-        r_rad = r*math.pi/180
-        makeTextMarker( text = "Moving to...\n{} / {} / {}º".format(round(x,2), round(y,2), r),
+        makeTextMarker( text = "Moving to...\n{} / {} / {} rad".format(round(x,2), round(y,2), r),
                         color = [0.3, 0.8, 0.3] )
 
-        moveToPosition(x, y, r_rad)
+        moveToPosition(x, y, r)
 
         # coordinate_publisher = rospy.Publisher("/coordinates", PoseStamped, queue_size=10)
         # goal_pose = PoseStamped()
@@ -347,6 +355,52 @@ def spawnObjectCallback( _ , model_name):
     spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
 
 
+def searchObject(model_name):
+    """
+    Adapt code from camera.py
+    Look for "model_name" at curent position
+    Spin 360 degrees while searching for object
+    """
+
+    if model_name == "sphere_violet":
+        pass
+
+    elif model_name == "sphere_red":
+        pass
+
+
+def searchCallback( _ , model_name, location, goal_dict = {}):
+    """
+    Search for "model_name" on "location"
+        location == 0: "Here"
+        location == 1: "Everywhere"
+        location == str: goal from saved_locations
+    """
+
+    # If location is string -> it's a dictionary key -> move to goal
+    if isinstance(location, str):
+        moveCallback(0, goal=location, goal_dict=goal_dict, wait=True)
+        searchObject(model_name)
+
+    elif location == 0:
+        searchObject(model_name)
+
+    # Everywhere:
+    elif location == 1:
+        self_x = pose.position.x
+        self_y = pose.position.y
+        print(self_x, self_y)
+
+        # Find nearest point in saved_locations
+        # Move there
+        # Search
+        # Move to next point in list
+        # Search
+        # Repeat until stopped
+
+        # moveToPosition(1, 2, 3, wait=True)
+
+
 def initMenu(menu_handler, goals_file):
     """
     Create a menu with a list of goals from a json file
@@ -374,11 +428,29 @@ def initMenu(menu_handler, goals_file):
     for object_name in object_list:
         menu_handler.insert(object_name, parent=spawn_tab, callback=partial(spawnObjectCallback, model_name = object_name))
 
+    # Look for Object...
+    search_tab = menu_handler.insert( "Look for Object..." )
+    for object_name in object_list:
+
+        search_tab_2 = menu_handler.insert(object_name, parent=search_tab)
+        menu_handler.insert("Here", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 0))
+        search_tab_3 = menu_handler.insert("Room...", parent=search_tab_2)
+    
+        for goal in goal_dict.keys():
+            menu_handler.insert(goal, parent=search_tab_3, callback=partial(searchCallback, model_name = object_name, location = goal, goal_dict = goal_dict))
+
+        menu_handler.insert("Everywhere", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 1))
+
     # Other...
     other_tab = menu_handler.insert( "Other..." )
 
     menu_handler.insert( "Spin", parent=other_tab, callback=spinCallback)
 
+
+def positionCallback(msg):
+    # Always have a global variable with the current position
+    global pose
+    pose = msg.pose.pose
 
 
 def main():
@@ -396,7 +468,7 @@ def main():
     makeTextMarker(text = "Ready")
     server.applyChanges()
 
-    
+    rospy.Subscriber('/odom', Odometry, positionCallback)
     
     # Spin until ctrl+c
     rospy.spin()
