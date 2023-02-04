@@ -135,6 +135,7 @@ def moveToPosition(x, y, r):
     """
     Move robot to 2D position (x, y) with rotation (r) in radians
     """
+    print("moving to position... {}, {}, {}".format(x, y, r))
 
     # Init
     client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
@@ -144,13 +145,13 @@ def moveToPosition(x, y, r):
     goal.target_pose.header.stamp = rospy.Time.now()
 
     # Position (xyz) & Orientation (xyzw)
-    goal.target_pose.pose.position.x = x
-    goal.target_pose.pose.position.y = y
+    goal.target_pose.pose.position.x = float(x)
+    goal.target_pose.pose.position.y = float(y)
     goal.target_pose.pose.position.z = 0.0
 
     goal.target_pose.pose.orientation.x = 0.0
     goal.target_pose.pose.orientation.y = 0.0
-    goal.target_pose.pose.orientation.z = r
+    goal.target_pose.pose.orientation.z = float(r)
     goal.target_pose.pose.orientation.w = 1.0
 
     # Send goal to the action server
@@ -183,7 +184,7 @@ def moveCallback( _ , goal, goal_dict):
     if valid_coords:
         print("New goal: " + goal)
         moveToPosition(goal_x, goal_y, goal_r)
-        makeTextMarker( text = "Moving to \"{}\"...".format(goal),
+        makeTextMarker( text = "Moving to \"{}\"".format(goal),
                         color = [0.3, 0.8, 0.3])
 
     # If goal or coordinares are invalid, display error message
@@ -232,7 +233,74 @@ def spinCallback( _ ):
     # Stop spinning
     twist.angular.z = 0
     publisher.publish(twist)
-    makeTextMarker(text = "Idle")
+    makeTextMarker(text = "Ready")
+
+
+def coordinatesCallback( _ ):
+
+
+    root = tk.Tk()
+    root.title("Enter Coordinates")
+
+    x_label = tk.Label(root, text="X:")
+    x_label.grid(row=0, column=0, padx=10, pady=10)
+
+    x_entry = tk.Entry(root)
+    x_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    y_label = tk.Label(root, text="Y:")
+    y_label.grid(row=1, column=0, padx=10, pady=10)
+
+    y_entry = tk.Entry(root)
+    y_entry.grid(row=1, column=1, padx=10, pady=10)
+
+    r_label = tk.Label(root, text="R:")
+    r_label.grid(row=2, column=0, padx=10, pady=10)
+
+    r_entry = tk.Entry(root)
+    r_entry.grid(row=2, column=1, padx=10, pady=10)
+
+    def submit():
+        x_raw = x_entry.get()
+        y_raw = y_entry.get()
+        r_raw = r_entry.get()
+        try:
+            x=float(x_raw)
+            y=float(y_raw)
+            r=float(r_raw)
+
+            if -10 < x < 10 and -10 < y < 10:
+                valid_input = True
+            else:
+                valid_input = False
+        except ValueError:
+            valid_input = False
+
+        if not valid_input:
+            makeTextMarker( text = "Invalid input!",
+                            color = [0.8, 0.2, 0.2] )
+            return
+
+        r_rad = r*math.pi/180
+        makeTextMarker( text = "Moving to...\n{} / {} / {}º".format(round(x,2), round(y,2), r),
+                        color = [0.3, 0.8, 0.3] )
+
+        moveToPosition(x, y, r_rad)
+
+        # coordinate_publisher = rospy.Publisher("/coordinates", PoseStamped, queue_size=10)
+        # goal_pose = PoseStamped()
+        # goal_pose.header.frame_id = "map"
+        # goal_pose.pose.position.x = float(x)
+        # goal_pose.pose.position.y = float(y)
+        # goal_pose.pose.orientation.z = float(r)
+        # coordinate_publisher.publish(goal_pose)
+        root.destroy()
+
+
+    submit_button = tk.Button(root, text="Submit", command=submit)
+    submit_button.grid(row=3, column=1, pady=10)
+
+    root.mainloop()
 
 
 def spawnObjectCallback( _ , model_name):
@@ -279,53 +347,6 @@ def spawnObjectCallback( _ , model_name):
     spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
 
 
-def get_coordinates( _ ):
-
-
-    root = tk.Tk()
-    root.title("Enter Coordinates")
-
-    x_label = tk.Label(root, text="X:")
-    x_label.grid(row=0, column=0, padx=10, pady=10)
-
-    x_entry = tk.Entry(root)
-    x_entry.grid(row=0, column=1, padx=10, pady=10)
-
-    y_label = tk.Label(root, text="Y:")
-    y_label.grid(row=1, column=0, padx=10, pady=10)
-
-    y_entry = tk.Entry(root)
-    y_entry.grid(row=1, column=1, padx=10, pady=10)
-
-    r_label = tk.Label(root, text="R:")
-    r_label.grid(row=2, column=0, padx=10, pady=10)
-
-    r_entry = tk.Entry(root)
-    r_entry.grid(row=2, column=1, padx=10, pady=10)
-
-    def submit():
-        x_raw = x_entry.get()
-        y_raw = y_entry.get()
-        r_raw = r_entry.get()
-        x=float(x_raw)
-        y=float(y_raw)
-        r=float(r_raw)
-        moveToPosition(x,y,r)
-        # coordinate_publisher = rospy.Publisher("/coordinates", PoseStamped, queue_size=10)
-        # goal_pose = PoseStamped()
-        # goal_pose.header.frame_id = "map"
-        # goal_pose.pose.position.x = float(x)
-        # goal_pose.pose.position.y = float(y)
-        # goal_pose.pose.orientation.z = float(r)
-        # coordinate_publisher.publish(goal_pose)
-        root.destroy()
-
-
-    submit_button = tk.Button(root, text="Submit", command=submit)
-    submit_button.grid(row=3, column=1, pady=10)
-
-    root.mainloop()
-
 def initMenu(menu_handler, goals_file):
     """
     Create a menu with a list of goals from a json file
@@ -340,7 +361,7 @@ def initMenu(menu_handler, goals_file):
 
     # Move to... coordinates/saved_location
     move_tab = menu_handler.insert( "Move to..." )
-    menu_handler.insert("Go to coordinates...", parent=move_tab, callback=get_coordinates)
+    menu_handler.insert("Go to coordinates...", parent=move_tab, callback=coordinatesCallback)
 
     for goal in goal_dict.keys():
         menu_handler.insert(goal, parent=move_tab, callback=partial(moveCallback, goal = goal, goal_dict = goal_dict))
@@ -372,7 +393,7 @@ def main():
     initMenu(menu_handler, goals_file="saved_locations.json")
     makeMenuMarker()
     menu_handler.apply(server, "menu_marker")
-    makeTextMarker(text = "Idle")
+    makeTextMarker(text = "Ready")
     server.applyChanges()
 
     
