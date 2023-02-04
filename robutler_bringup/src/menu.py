@@ -23,6 +23,9 @@ import rospkg
 from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
+import tkinter as tk
+from geometry_msgs.msg import PoseStamped
+
 
 # Global variables
 server = None
@@ -276,6 +279,53 @@ def spawnObjectCallback( _ , model_name):
     spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
 
 
+def get_coordinates( _ ):
+
+
+    root = tk.Tk()
+    root.title("Enter Coordinates")
+
+    x_label = tk.Label(root, text="X:")
+    x_label.grid(row=0, column=0, padx=10, pady=10)
+
+    x_entry = tk.Entry(root)
+    x_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    y_label = tk.Label(root, text="Y:")
+    y_label.grid(row=1, column=0, padx=10, pady=10)
+
+    y_entry = tk.Entry(root)
+    y_entry.grid(row=1, column=1, padx=10, pady=10)
+
+    r_label = tk.Label(root, text="R:")
+    r_label.grid(row=2, column=0, padx=10, pady=10)
+
+    r_entry = tk.Entry(root)
+    r_entry.grid(row=2, column=1, padx=10, pady=10)
+
+    def submit():
+        x_raw = x_entry.get()
+        y_raw = y_entry.get()
+        r_raw = r_entry.get()
+        x=float(x_raw)
+        y=float(y_raw)
+        r=float(r_raw)
+        moveToPosition(x,y,r)
+        # coordinate_publisher = rospy.Publisher("/coordinates", PoseStamped, queue_size=10)
+        # goal_pose = PoseStamped()
+        # goal_pose.header.frame_id = "map"
+        # goal_pose.pose.position.x = float(x)
+        # goal_pose.pose.position.y = float(y)
+        # goal_pose.pose.orientation.z = float(r)
+        # coordinate_publisher.publish(goal_pose)
+        root.destroy()
+
+
+    submit_button = tk.Button(root, text="Submit", command=submit)
+    submit_button.grid(row=3, column=1, pady=10)
+
+    root.mainloop()
+
 def initMenu(menu_handler, goals_file):
     """
     Create a menu with a list of goals from a json file
@@ -288,8 +338,10 @@ def initMenu(menu_handler, goals_file):
     except FileNotFoundError:
         exit("Error: " + goals_file + " not found")
 
-    # Move to...
+    # Move to... coordinates/saved_location
     move_tab = menu_handler.insert( "Move to..." )
+    menu_handler.insert("Go to coordinates...", parent=move_tab, callback=get_coordinates)
+
     for goal in goal_dict.keys():
         menu_handler.insert(goal, parent=move_tab, callback=partial(moveCallback, goal = goal, goal_dict = goal_dict))
 
@@ -323,6 +375,8 @@ def main():
     makeTextMarker(text = "Idle")
     server.applyChanges()
 
+    
+    
     # Spin until ctrl+c
     rospy.spin()
 

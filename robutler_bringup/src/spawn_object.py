@@ -7,6 +7,7 @@ import rospkg
 from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
+
 rospy.init_node('insert_object',log_level=rospy.INFO)
 
 # get an instance of RosPack with the default search paths
