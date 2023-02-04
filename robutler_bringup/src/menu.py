@@ -232,33 +232,46 @@ def spinCallback( _ ):
     makeTextMarker(text = "Idle")
 
 
-def AddCallback( _ ):
+def spawnObjectCallback( _ , model_name):
+    """
+    Spawn input model on a random location
+    """
 
-    # get an instance of RosPack with the default search paths
+    # Get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
     package_path = rospack.get_path('psr_apartment_description') + '/description/models/'
 
+    # Get a random model_placement
+    if model_name == "sphere_v" or "sphere_r":
 
-    #Add here mode poses
-    placements = []
-    placements.append({'pose':Pose(position=Point(x=-5.69, y=4.37, z=0.6), orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                'room':'large_bedroom', 'place': 'bed'})
-    placements.append({'pose':Pose(position=Point(x=-7.33, y=5.29, z=0.58), orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                'room':'large_bedroom', 'place': 'bedside_cabinet'})
+        placements = []
+        placements.append({'pose':Pose(position=Point(x=-5.69, y=4.37, z=0.6), orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                    'room':'large_bedroom', 'place': 'bed'})
+        placements.append({'pose':Pose(position=Point(x=-7.33, y=5.29, z=0.58), orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                    'room':'large_bedroom', 'place': 'bedside_cabinet'})
+        model_placement = random.choice(placements)
 
-    model_names = ['sphere_v']
+    elif model_name == "laptop":
+        print("laptop")
+        return # Replace with code to get random model_placement
 
-    # Add here several models. All should be added to the robutler_description package
-    model_name = random.choice(model_names)
+    elif model_name == "bottle":
+        print("bottle")
+        return # Replace with code to get random model_placement
+
+    elif model_name == "person":
+        print("person")
+        return # Replace with code to get random model_placement
+
+    else:
+        print("invalid model name")
+        return
 
     f = open( package_path + model_name + '/model.sdf' ,'r')
     sdff = f.read()
 
     rospy.wait_for_service('gazebo/spawn_sdf_model')
     spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
-
-
-    model_placement = random.choice(placements)
     name = model_name + '_in_' + model_placement['place'] + '_of_' + model_placement['room']
     spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
 
@@ -268,23 +281,31 @@ def initMenu(menu_handler, goals_file):
     Create a menu with a list of goals from a json file
     """
 
-    # Get dictionary from json file
+    # Get locations dictionary from json file
     try:
         file_path = os.path.realpath(os.path.dirname(__file__)) + "/" + goals_file
         goal_dict = readJsonFile(file_path)
     except FileNotFoundError:
         exit("Error: " + goals_file + " not found")
 
-
-    # Create menu
-    move_tab = menu_handler.insert( "New goal..." )
-
+    # Move to...
+    move_tab = menu_handler.insert( "Move to..." )
     for goal in goal_dict.keys():
         menu_handler.insert(goal, parent=move_tab, callback=partial(moveCallback, goal = goal, goal_dict = goal_dict))
 
     menu_handler.insert( "Stop", callback=stopCallback)
-    menu_handler.insert( "Spin", callback=spinCallback)
-    menu_handler.insert( "Add Object", callback=AddCallback)
+
+    # Spawn Object...
+    object_list = ["sphere_violet", "sphere_red", "laptop", "bottle", "person"]
+    spawn_tab = menu_handler.insert( "Spawn Object..." )
+    for object_name in object_list:
+        menu_handler.insert(object_name, parent=spawn_tab, callback=partial(spawnObjectCallback, model_name = object_name))
+
+    # Other...
+    other_tab = menu_handler.insert( "Other..." )
+
+    menu_handler.insert( "Spin", parent=other_tab, callback=spinCallback)
+
 
 
 def main():
