@@ -5,6 +5,7 @@ import rospy
 import json
 from functools import partial
 import math
+import random
 
 # Menus
 from interactive_markers.interactive_marker_server import *
@@ -15,23 +16,27 @@ from visualization_msgs.msg import *
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+import tkinter as tk
 
-#spawn objects
-
-import random
+# Spawn objects
 import rospkg
 from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
-import tkinter as tk
-from geometry_msgs.msg import PoseStamped
+# Image
+from camera import detect_purple_sphere
 
-from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Image
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
 
 
 # Global variables
 server = None
 pose = None
+bridge = CvBridge()
+images = {"camera": None, "object": None}
 
 
 def readJsonFile(path):
@@ -216,7 +221,7 @@ def stopCallback( _ ):
 
 def spinCallback( _ ):
     """
-    Do a full rotation
+    Do a full rotation - used when location is slighly off
     """
 
     publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
@@ -321,6 +326,10 @@ def spawnObjectCallback( _ , model_name):
     package_path = rospack.get_path('psr_apartment_description') + '/description/models/'
 
     # Get a random model_placement
+
+    ## TODO: Add more object types
+    ## TODO: Save used locations to list, don't repeat locations
+
     if model_name == "sphere_v" or "sphere_r":
 
         placements = []
@@ -362,11 +371,57 @@ def searchObject(model_name):
     Spin 360 degrees while searching for object
     """
 
-    if model_name == "sphere_violet":
-        pass
+    publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-    elif model_name == "sphere_red":
-        pass
+    twist = Twist()
+    twist.linear.x = 0
+
+    client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+    client.cancel_all_goals()
+
+    makeTextMarker( text = "Looking for \"{}\"".format(model_name),
+                    color = [0.2, 0.2, 0.8])
+
+    # Calculate spin duration from speed (rad/s)
+    rotation_speed = 0.75
+    time_end = rospy.get_rostime().secs + 2*math.pi/rotation_speed
+
+    # Spin while checking camera images
+    global images
+    success = False
+    while rospy.get_rostime().secs < time_end:
+        rospy.sleep(0.5)
+        twist.angular.z = rotation_speed
+        publisher.publish(twist)
+
+        if model_name == "sphere_violet":
+            img, success = detect_purple_sphere(images["camera"])
+            if success:
+                images["object"] = img
+                break
+
+        elif model_name == "sphere_red":
+            pass
+
+        elif model_name == "laptop":
+            pass
+
+        elif model_name == "bottle":
+            pass
+
+        elif model_name == "person":
+            pass
+
+    # Stop spinning
+    twist.angular.z = 0
+    publisher.publish(twist)
+
+    if success:
+        makeTextMarker( text = "Object found!",
+                        color = [0.2, 0.8, 0.2])
+    else:
+        makeTextMarker( text = "Object not found!",
+                        color = [0.8, 0.2, 0.2])
 
 
 def searchCallback( _ , model_name, location, goal_dict = {}):
@@ -379,14 +434,20 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
 
     # If location is string -> it's a dictionary key -> move to goal
     if isinstance(location, str):
+        makeTextMarker( text = "Looking for \"{}\" in \"{}\"".format(model_name, location),
+                        color = [0.2, 0.8, 0.2])
         moveCallback(0, goal=location, goal_dict=goal_dict, wait=True)
         searchObject(model_name)
 
+    # Here
     elif location == 0:
         searchObject(model_name)
 
     # Everywhere:
     elif location == 1:
+        makeTextMarker( text = "Looking for \"{}\" everywhere".format(model_name),
+                        color = [0.2, 0.8, 0.2])
+
         self_x = pose.position.x
         self_y = pose.position.y
         print(self_x, self_y)
@@ -453,6 +514,27 @@ def positionCallback(msg):
     pose = msg.pose.pose
 
 
+def imageCallback(msg):
+    # Convert image to opencv
+
+    global images
+    try:
+        images["camera"] = bridge.imgmsg_to_cv2(msg, "bgr8")
+    except CvBridgeError as e:
+        print('Failed to convert image:', e)
+        return
+
+    if images["camera"] is not None:
+        cv2.imshow("Robutler's Camera", images["camera"])
+        cv2.waitKey(1)
+
+    # If an object is found, show it for 5 seconds
+    if images["object"] is not None:
+        cv2.imshow("Robutler's Camera", images["object"])
+        images["object"] = None
+        cv2.waitKey(5000)
+
+
 def main():
 
     # Initialize
@@ -469,9 +551,13 @@ def main():
     server.applyChanges()
 
     rospy.Subscriber('/odom', Odometry, positionCallback)
-    
-    # Spin until ctrl+c
-    rospy.spin()
+    rospy.Subscriber("/camera/rgb/image_raw", Image, imageCallback)
+
+
+    # Spin until ctrl+c (can't use rospy.spin because of opencv)
+    while not rospy.is_shutdown():
+        rospy.sleep(10)
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

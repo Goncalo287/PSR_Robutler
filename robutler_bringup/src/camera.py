@@ -36,7 +36,7 @@ def detect_purple_sphere(img):
         # Display image with message
         cv2.putText(img, "Here's a purple sphere", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-    return img
+    return img, spheres_detected
 
 def image_callback(msg):
     # Convert image to opencv
