@@ -15,6 +15,7 @@ import cv2
 from torchvision.transforms import ToTensor
 import numpy as np
 import rospy
+from std_msgs.msg import String
 
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D
 from sensor_msgs.msg import Image
@@ -181,10 +182,13 @@ class Yolov7Publisher:
             bboxes = [[int(x1), int(y1), int(x2), int(y2)]
                       for x1, y1, x2, y2 in detections[:, :4].tolist()]
             classes = [int(c) for c in detections[:, 5].tolist()]
-            vis_img = draw_detections(np_img_orig, bboxes, classes,
+            vis_img, label_list = draw_detections(np_img_orig, bboxes, classes,
                                       self.class_labels)
             vis_msg = self.bridge.cv2_to_imgmsg(vis_img)
             self.visualization_publisher.publish(vis_msg)
+            
+            label_pub = rospy.Publisher("yolov7_label", String, queue_size=10)
+            label_pub.publish(str(label_list))
 
 
 if __name__ == "__main__":

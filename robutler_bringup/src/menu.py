@@ -12,6 +12,7 @@ from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 
+
 # Move to goal
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -26,6 +27,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 # Image
 from camera import detect_purple_sphere
+from std_msgs.msg import String
 
 from sensor_msgs.msg import Image
 import cv2
@@ -537,6 +539,13 @@ def imageCallback(msg):
         cv2.waitKey(5000)
 
 
+def labelCallback(msg):
+    # Convert image to opencv
+
+    print(msg)
+
+    
+
 def main():
 
     # Initialize
@@ -554,6 +563,7 @@ def main():
 
     rospy.Subscriber('/odom', Odometry, positionCallback)
     rospy.Subscriber("/camera/rgb/image_raw", Image, imageCallback)
+    rospy.Subscriber("/yolov7/yolov7_label", String, labelCallback)
 
 
     # Spin until ctrl+c (can't use rospy.spin because of opencv)

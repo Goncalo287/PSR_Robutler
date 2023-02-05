@@ -13,6 +13,8 @@ import numpy as np
 import cv2 as cv
 from typing import List, Union
 
+
+
 # ==============================================================================
 #                               C O N S T A N T E S
 # ==============================================================================
@@ -27,6 +29,9 @@ LABEL_MARGIN = 12
 
 def draw_detections(img: np.array, bboxes: List[List[int]], classes: List[int],
                     class_labels: Union[List[str], None]):
+    
+    label_list = []
+    
     for bbox, cls in zip(bboxes, classes):
         x1, y1, x2, y2   = bbox
         height, width, _ = img.shape
@@ -68,5 +73,9 @@ def draw_detections(img: np.array, bboxes: List[List[int]], classes: List[int],
                 (255, 255, 255),
                 2
             )
+            
+            label_list.append(label)
+            
+            
 
-    return img
+    return img, label_list 
