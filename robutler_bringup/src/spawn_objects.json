@@ -2,7 +2,7 @@
     "sphere_violet": [
         {
             "position": [ -5.69, 4.37, 0.6 ],
-            "orientation": [0, 0, 0, 1],
+            "orientation": [ 0, 0, 0, 1 ],
             "name": "bed_in_large_bedroom"
         },
         {
@@ -14,7 +14,7 @@
     "sphere_red": [
         {
             "position": [ -5.29, 4.37, 0.6 ],
-            "orientation": [0, 0, 0, 1],
+            "orientation": [ 0, 0, 0, 1 ],
             "name": "bed_in_large_bedroom"
         },
         {
