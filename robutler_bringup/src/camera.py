@@ -9,7 +9,9 @@ from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
 
-def detect_spheres(img):
+def detect_spheres(img, color):
+    print(color)
+    
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -62,7 +64,7 @@ def detect_spheres(img):
         # Display image with message
         cv2.putText(img, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-    return img
+    return img, spheres_detected
 
 
 def image_callback(msg):

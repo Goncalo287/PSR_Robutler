@@ -388,13 +388,17 @@ def searchObject(model_name):
         publisher.publish(twist)
         
         if model_name == "sphere_violet":
-            img, success = detect_spheres(images["camera"])
+            
+            img, success = detect_spheres(images["camera"], model_name)
             if success:
                 images["object"] = img
                 break
 
         elif model_name == "sphere_red":
-            pass
+            img, success = detect_spheres(images["camera"], model_name)
+            if success:
+                images["object"] = img
+                break
         
         # Check yolo labels
         elif model_name in ["laptop", "bottle", "person"]:
