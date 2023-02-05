@@ -316,52 +316,41 @@ def coordinatesCallback( _ ):
     root.mainloop()
 
 
-def spawnObjectCallback( _ , model_name):
+def spawnObjectCallback( _ , model_name, object_dict, location=None):
     """
-    Spawn input model on a random location
+    Spawn input model on a location from spawn_objects.json - if None, random location
     """
 
     # Get an instance of RosPack with the default search paths
     rospack = rospkg.RosPack()
     package_path = rospack.get_path('psr_apartment_description') + '/description/models/'
 
-    # Get a random model_placement
+    # Get placement_data - If no location is specified, get a random one
+    placements = object_dict[model_name]
 
-    ## TODO: Add more object types
-    ## TODO: Save used locations to list, don't repeat locations
-
-    if model_name == "sphere_v" or "sphere_r":
-
-        placements = []
-        placements.append({'pose':Pose(position=Point(x=-5.69, y=4.37, z=0.6), orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                    'room':'large_bedroom', 'place': 'bed'})
-        placements.append({'pose':Pose(position=Point(x=-7.33, y=5.29, z=0.58), orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                    'room':'large_bedroom', 'place': 'bedside_cabinet'})
-        model_placement = random.choice(placements)
-
-    elif model_name == "laptop":
-        print("laptop")
-        return # Replace with code to get random model_placement
-
-    elif model_name == "bottle":
-        print("bottle")
-        return # Replace with code to get random model_placement
-
-    elif model_name == "person":
-        print("person")
-        return # Replace with code to get random model_placement
-
+    if location is None:
+        placement_data = random.choice(placements)
     else:
-        print("invalid model name")
-        return
+        for place in placements:
+            if place["name"] == location:
+                placement_data = place
+                break
+
+    model_pose = Pose(  position=Point( x = placement_data["position"][0],
+                                        y = placement_data["position"][1],
+                                        z = placement_data["position"][2]),
+                        orientation=Quaternion( x = placement_data["orientation"][0],
+                                                y = placement_data["orientation"][1],
+                                                z = placement_data["orientation"][2],
+                                                w = placement_data["orientation"][3]))
 
     f = open( package_path + model_name + '/model.sdf' ,'r')
     sdff = f.read()
 
     rospy.wait_for_service('gazebo/spawn_sdf_model')
     spawn_model_prox = rospy.ServiceProxy('gazebo/spawn_sdf_model', SpawnModel)
-    name = model_name + '_in_' + model_placement['place'] + '_of_' + model_placement['room']
-    spawn_model_prox(name, sdff, model_name, model_placement['pose'], "world")
+    name = model_name + '_in_' + placement_data["name"]
+    spawn_model_prox(name, sdff, model_name, model_pose, "world")
 
 
 def searchObject(model_name):
@@ -462,17 +451,26 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
         # moveToPosition(1, 2, 3, wait=True)
 
 
-def initMenu(menu_handler, goals_file):
+def initMenu(menu_handler):
     """
     Create a menu with a list of goals from a json file
     """
 
     # Get locations dictionary from json file
+    path_this = os.path.realpath(os.path.dirname(__file__))
+
     try:
-        file_path = os.path.realpath(os.path.dirname(__file__)) + "/" + goals_file
+        file_path =  path_this + "/saved_locations.json"
         goal_dict = readJsonFile(file_path)
     except FileNotFoundError:
-        exit("Error: " + goals_file + " not found")
+        exit("Error: saved_locations file not found")
+
+    # Get objects dictionary from json file
+    try:
+        file_path = path_this + "/spawn_objects.json"
+        object_dict = readJsonFile(file_path)
+    except FileNotFoundError:
+        exit("Error: spawn_objects file not found")
 
     # Move to... coordinates/saved_location
     move_tab = menu_handler.insert( "Move to..." )
@@ -484,14 +482,18 @@ def initMenu(menu_handler, goals_file):
     menu_handler.insert( "Stop", callback=stopCallback)
 
     # Spawn Object...
-    object_list = ["sphere_violet", "sphere_red", "laptop", "bottle", "person"]
     spawn_tab = menu_handler.insert( "Spawn Object..." )
-    for object_name in object_list:
-        menu_handler.insert(object_name, parent=spawn_tab, callback=partial(spawnObjectCallback, model_name = object_name))
+
+    for object_name in object_dict.keys():
+        spawn_tab_2 = menu_handler.insert(object_name, parent=spawn_tab)
+        menu_handler.insert("Random", parent=spawn_tab_2, callback=partial(spawnObjectCallback, model_name = object_name, object_dict = object_dict))
+        for location in object_dict[object_name]:
+            menu_handler.insert(location["name"], parent=spawn_tab_2, callback=partial(spawnObjectCallback, model_name = object_name, object_dict = object_dict, location = location["name"]))
+
 
     # Look for Object...
     search_tab = menu_handler.insert( "Look for Object..." )
-    for object_name in object_list:
+    for object_name in object_dict.keys():
 
         search_tab_2 = menu_handler.insert(object_name, parent=search_tab)
         menu_handler.insert("Here", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 0))
@@ -544,7 +546,7 @@ def main():
     menu_handler = MenuHandler()
 
     # Create menu
-    initMenu(menu_handler, goals_file="saved_locations.json")
+    initMenu(menu_handler)
     makeMenuMarker()
     menu_handler.apply(server, "menu_marker")
     makeTextMarker(text = "Ready")
