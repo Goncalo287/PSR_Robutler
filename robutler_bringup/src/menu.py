@@ -38,7 +38,8 @@ from cv_bridge import CvBridge, CvBridgeError
 server = None
 pose = None
 bridge = CvBridge()
-images = {"camera": None, "object": None}
+images = {"camera": None, "object": None, "yolo": None}
+labels = []
 
 
 def readJsonFile(path):
@@ -379,6 +380,7 @@ def searchObject(model_name):
 
     # Spin while checking camera images
     global images
+    global labels
     success = False
     while rospy.get_rostime().secs < time_end:
         rospy.sleep(0.5)
@@ -393,15 +395,12 @@ def searchObject(model_name):
 
         elif model_name == "sphere_red":
             pass
-
-        elif model_name == "laptop":
-            pass
-
-        elif model_name == "bottle":
-            pass
-
-        elif model_name == "person":
-            pass
+        
+        # Check yolo labels
+        elif model_name in ["laptop", "bottle", "person"]:
+            if model_name in labels:
+                images["object"] = images["yolo"]
+                break
 
     # Stop spinning
     twist.angular.z = 0
@@ -540,11 +539,21 @@ def imageCallback(msg):
 
 
 def labelCallback(msg):
-    # Convert image to opencv
+    # Save label list as global variable
+    label_str = msg.data
+    global labels
+    labels = label_str.split("\n")
 
-    print(msg)
 
-    
+def yoloCallback(msg):
+    # Save image in yolo topic as opencv image
+    global images
+    try:
+        images["yolo"] = bridge.imgmsg_to_cv2(msg, "bgr8")
+    except CvBridgeError as e:
+        print('Failed to convert image:', e)
+        return
+
 
 def main():
 
@@ -564,6 +573,7 @@ def main():
     rospy.Subscriber('/odom', Odometry, positionCallback)
     rospy.Subscriber("/camera/rgb/image_raw", Image, imageCallback)
     rospy.Subscriber("/yolov7/yolov7_label", String, labelCallback)
+    rospy.Subscriber("/yolov7/yolov7/visualization", String, yoloCallback)
 
 
     # Spin until ctrl+c (can't use rospy.spin because of opencv)
