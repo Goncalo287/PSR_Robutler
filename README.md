@@ -13,9 +13,6 @@ Spawn robot:
 roslaunch robutler_bringup bringup.launch
 ```
 
-
-
-
 ### Edit saved map
 Start:
 ```
@@ -29,7 +26,7 @@ roscd robutler_navigation/maps/map/ && rosrun map_server map_saver -f map
 
 # SAVI - Where's my Coffee Mug
 
-The "SAVI project - Where's my coffee mug?" implements an advanced perception system that processes information collected from 3D sensors and conventional cameras. The goal is to extract objects from a generated point cloud and using them to train a neural network classifier. This classifier will then be able to tell what the object is.
+"Robutler project introduces the world of robotic system simulation. It works in tandem with the Gazebo environment simulator to simulate an apartment. The Robutler project facilitates communication between the entire system and ROS, a collection of frameworks that simplify the process of simulating robotic systems."
 
 <p align="center">
   <img src="https://www.hipersuper.pt/wp-content/uploads/2012/12/Universidade-de-Aveiro.jpg">
@@ -50,7 +47,8 @@ Index
 
 
 # Description
-The second assignment of the SAVI ([Advanced Industrial Vision Systems](https://www.ua.pt/pt/uc/14722)) a curricular unit given at the [university of aveiro](https://www.ua.pt/) in the [Master's degree in mechanical engineering](https://www.ua.pt/pt/curso/488) the project aimed to teach the basics of 3D point cloud understanding and processing, as well as the use of classifiers and integration as a system. The main objective was to recognize objects identified in the point cloud using the "Washington RGB-D Dataset".
+
+Introducing the Robutler project, a project initiated in the [PSR (Robotic Systems Programming)](linkPSR) class at the [university of aveiro](https://www.ua.pt/) in the [Master's degree in mechanical engineering](https://www.ua.pt/pt/curso/488). The goal of this project is to introduce students to the ROS (Robotic Operating System) communication system. By the end of the project, students acquired minimal but general competencies in using and communicating through the ROS system.
 
 ![image](https://user-images.githubusercontent.com/92520749/215944005-0af835c8-5634-4e37-bc28-ef263991ea8d.png)
 

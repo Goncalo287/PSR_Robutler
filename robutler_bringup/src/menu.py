@@ -26,7 +26,7 @@ from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 # Image
-from camera import detect_purple_sphere
+from camera import detect_spheres
 from std_msgs.msg import String
 
 from sensor_msgs.msg import Image
@@ -386,9 +386,9 @@ def searchObject(model_name):
         rospy.sleep(0.5)
         twist.angular.z = rotation_speed
         publisher.publish(twist)
-
+        
         if model_name == "sphere_violet":
-            img, success = detect_purple_sphere(images["camera"])
+            img, success = detect_spheres(images["camera"])
             if success:
                 images["object"] = img
                 break
@@ -400,6 +400,7 @@ def searchObject(model_name):
         elif model_name in ["laptop", "bottle", "person"]:
             if model_name in labels:
                 images["object"] = images["yolo"]
+                success = True
                 break
 
     # Stop spinning
@@ -543,13 +544,18 @@ def labelCallback(msg):
     label_str = msg.data
     global labels
     labels = label_str.split("\n")
+    #print(labels)
 
 
 def yoloCallback(msg):
     # Save image in yolo topic as opencv image
+    #print("ta a ser chamada")
     global images
+    #print(msg.encoding)
+    
     try:
-        images["yolo"] = bridge.imgmsg_to_cv2(msg, "bgr8")
+        images["yolo"] = bridge.imgmsg_to_cv2(msg, "8UC3")
+        #images["yolo"] = bridge.imgmsg_to_cv2(msg, "bgr8")
     except CvBridgeError as e:
         print('Failed to convert image:', e)
         return
@@ -573,7 +579,7 @@ def main():
     rospy.Subscriber('/odom', Odometry, positionCallback)
     rospy.Subscriber("/camera/rgb/image_raw", Image, imageCallback)
     rospy.Subscriber("/yolov7/yolov7_label", String, labelCallback)
-    rospy.Subscriber("/yolov7/yolov7/visualization", String, yoloCallback)
+    rospy.Subscriber("/yolov7/yolov7/visualization", Image, yoloCallback)
 
 
     # Spin until ctrl+c (can't use rospy.spin because of opencv)
