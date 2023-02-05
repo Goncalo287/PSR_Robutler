@@ -38,4 +38,5 @@
     <!-- Right click menu -->
     <!-- <node pkg="robutler_bringup" type="menu.py" name="move_menu" /> -->
 
+    <include file="$(find yolov7_ros)/launch/yolov7.launch"/>
 </launch>
