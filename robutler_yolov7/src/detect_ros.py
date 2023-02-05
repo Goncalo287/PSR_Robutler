@@ -187,8 +187,9 @@ class Yolov7Publisher:
             vis_msg = self.bridge.cv2_to_imgmsg(vis_img)
             self.visualization_publisher.publish(vis_msg)
             
+            label_list = "\n".join(label_list)
             label_pub = rospy.Publisher("yolov7_label", String, queue_size=10)
-            label_pub.publish(str(label_list))
+            label_pub.publish(label_list)
 
 
 if __name__ == "__main__":
