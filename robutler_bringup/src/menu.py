@@ -6,6 +6,7 @@ import json
 from functools import partial
 import math
 import random
+import time
 
 # Menus
 from interactive_markers.interactive_marker_server import *
@@ -22,7 +23,7 @@ import tkinter as tk
 
 # Spawn objects
 import rospkg
-from gazebo_msgs.srv import SpawnModel
+from gazebo_msgs.srv import SpawnModel, DeleteModel, DeleteModelRequest
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 # Image
@@ -430,7 +431,7 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
                 min_distance = distance
                 goal_name = goal
 
-        # Make new list of goals starting from the nearest one and
+        # Make new list of goals starting from the nearest one
         index = goal_list.index(goal_name)
         length = len(goal_list)
         goal_list *= 2
@@ -440,7 +441,7 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
         # Search in every location
         for goal_name in new_goals:
             locations_searched += 1
-            makeTextMarker( text = "Looking for \"{}\"...\nLocation {} / {}".format(model_name, locations_searched, len(new_goals)),
+            makeTextMarker( text = "Looking for \"{}\"... {} / {}".format(model_name, locations_searched, len(new_goals)),
                         color = [0.2, 0.8, 0.2])
             moveCallback(0, goal=goal_name, goal_dict=goal_dict, wait=True)
             success = searchObject(model_name)
@@ -450,6 +451,51 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
         if not success:
             makeTextMarker( text = "Object not found!",
                             color = [0.8, 0.2, 0.2])
+
+
+def removeObjectsCallback( _ , object_dict):
+
+    srv = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+    req = DeleteModelRequest()
+
+    name_list = []
+
+    for obj in object_dict.keys():
+        location_list = object_dict[obj]
+        for location in location_list:
+            name = obj + "_in_" + location["name"]
+            name_list += [name]
+
+    success_count = 0
+    for name in name_list:
+        req.model_name = name
+        resp = srv(req)
+
+        if resp.success:
+            success_count += 1
+
+    print("Deleted {} objects".format(success_count))
+
+
+def takePictureCallback( _ ):
+
+    path_this = os.path.realpath(os.path.dirname(__file__))
+    time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
+    full_path = path_this + "/pictures/" + time_str + ".png"
+    success = cv2.imwrite(full_path, images["camera"])
+    if success:
+        print("Saved image to: " + full_path)
+    else:
+        print("Failed to save image")
+
+
+def removeRobotCallback( _ ):
+    
+    srv = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+    req = DeleteModelRequest()
+
+    req.model_name = "robutler"
+    srv(req)
 
 
 def initMenu(menu_handler):
@@ -512,10 +558,15 @@ def initMenu(menu_handler):
 
         menu_handler.insert("Everywhere", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 1, goal_dict = goal_dict))
 
+
+    menu_handler.insert( "Take Picture", callback=takePictureCallback)
+
     # Other...
     other_tab = menu_handler.insert( "Other..." )
 
     menu_handler.insert( "Spin", parent=other_tab, callback=partial(setSpeedCallback, linear=0, angular=0.75, text="Spinning..."))
+    menu_handler.insert( "Remove spawned objects", parent=other_tab, callback=partial(removeObjectsCallback, object_dict = object_dict))
+    menu_handler.insert( "Remove Robutler", parent=other_tab, callback=removeRobotCallback)
 
 
 def positionCallback(msg):
