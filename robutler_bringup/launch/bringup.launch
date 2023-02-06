@@ -15,7 +15,7 @@
         <arg name="z_pos" value="$(arg z_pos)"/>
     </include>
 
-    <!--teste Launch robot state publisher to get tf from joint_state -->
+    <!-- Launch robot state publisher to get tf from joint_state -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
     <!-- Launch rviz, loading configuration file -->
@@ -35,7 +35,7 @@
     <!-- Yolov7 -->
     <include file="$(find yolov7_ros)/launch/yolov7.launch"/>
 
-    <!-- Right click menu -->
+    <!-- Right click menu + camera -->
     <node pkg="robutler_bringup" type="menu.py" name="move_menu" />
 
 </launch>
