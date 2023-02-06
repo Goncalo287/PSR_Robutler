@@ -2,7 +2,7 @@
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <!-- <arg name="world_name" value="$(find turtlebot3_gazebo)/worlds/turtlebot3_house.world"/> -->
-    <arg name="world_name" value="$(find psr_apartment_description)/worlds/psr_apartment.world"/>
+    <arg name="world_name" value="$(find psr_apartment_description)/worlds/new_apartment.world"/>
     <!-- <arg name="world_name" value="$(find psr_apartment_description)/worlds/apartment_empty.world"/> -->
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
