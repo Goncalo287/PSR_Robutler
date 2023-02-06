@@ -151,11 +151,11 @@
     "aws_robomaker_retail_Computer_01": [
         {
             "position": [ 1.443460, 4.872880, 0.744429 ],
-            "orientation": [ 0, 0, 0, 0 ],
+            "orientation": [ 0, 0, -3.14, 0 ],
             "name": "office"
         },{
-            "position": [ -1.642830, 4.079530, 0.45 ],
-            "orientation": [ 0, 0, 0, 0 ],
+            "position": [ -1.703602, 4.035162, 0.417144 ],
+            "orientation": [ 0, 0, -3.14, 0 ],
             "name": "small_bedroom"
             },{
                 "position": [ -6.323000, -2.135690, 0.85 ],

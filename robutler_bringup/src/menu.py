@@ -371,7 +371,7 @@ def searchObject(model_name):
                 break
 
         # Check yolo labels
-        elif model_name in ["laptop", "bottle", "person"]:
+        elif model_name in ["tvmonitor", "bottle", "person"]:
             if model_name in labels:
                 images["object"] = images["yolo"]
                 success = True
