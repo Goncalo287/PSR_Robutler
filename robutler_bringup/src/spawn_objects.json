@@ -150,17 +150,33 @@
     ],
     "aws_robomaker_retail_Computer_01": [
         {
-            "position": [ -2.30, -2.35, 0.8 ],
+            "position": [ 1.443460, 4.872880, 0.744429 ],
+            "orientation": [ 0, 0, 0, 0 ],
+            "name": "office"
+        },{
+            "position": [ -1.642830, 4.079530, 0.45 ],
+            "orientation": [ 0, 0, 0, 0 ],
+            "name": "small_bedroom"
+            },{
+                "position": [ -6.323000, -2.135690, 0.85 ],
             "orientation": [ 0, 0, 0, 1 ],
-            "name": "living_room_bookcase"
+            "name": "living_room_small_table1"
         }
 
     ],
     "Beer": [
         {
-            "position": [ 1, 1, 0.8 ],
+            "position": [ -0.7, -4, 0.5 ],
             "orientation": [ 0, 0, 0, 1 ],
-            "name": "living_room_bookcase"
+            "name": "living_room"
+        },{
+            "position": [ -3.5, -1.9, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": "kitchen"
+        },{
+            "position": [ -7.50, 5.3, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": "large_bedroom"
         }
 
     ],
@@ -169,7 +185,15 @@
         {
             "position": [ -2.30, -2.35, 0.8 ],
             "orientation": [ 0, 0, 0, 1 ],
-            "name": "living_room_bookcase"
+            "name": ""
+        },{
+            "position": [ -2.30, -2.35, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": ""
+        },{
+            "position": [ -2.30, -2.35, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": ""
         }
     ]
 }
