@@ -149,12 +149,27 @@
         }
     ],
     "aws_robomaker_retail_Computer_01": [
+        {
+            "position": [ -2.30, -2.35, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": "living_room_bookcase"
+        }
 
     ],
-    "bottle_white_wine": [
+    "Beer": [
+        {
+            "position": [ 1, 1, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": "living_room_bookcase"
+        }
 
     ],
     "person_standing": [
 
+        {
+            "position": [ -2.30, -2.35, 0.8 ],
+            "orientation": [ 0, 0, 0, 1 ],
+            "name": "living_room_bookcase"
+        }
     ]
 }
