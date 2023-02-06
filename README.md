@@ -1,6 +1,6 @@
 # PSR_Robutler
 
-"Robutler project introduces the world of robotic system simulation. It works in tandem with the Gazebo environment simulator to simulate an apartment. The Robutler project facilitates communication between the entire system and ROS, a collection of frameworks that simplify the process of simulating robotic systems."
+Robutler project introduces the world of robotic system simulation. It works in tandem with the Gazebo environment simulator to simulate an apartment. The Robutler project facilitates communication between the entire system and ROS, a collection of frameworks that simplify the process of simulating robotic systems.
 
 <p align="center">
   <img src="https://www.hipersuper.pt/wp-content/uploads/2012/12/Universidade-de-Aveiro.jpg">
@@ -12,7 +12,7 @@ Index
   * [Description](#description)
   * [The Project](#the-project)
       * [Requirements](#requirements)
-      * [Dataset](#dataset)
+      * [Ambient/apartment](#Ambient/apartment)
       * [Usage](#usage)
       * [Demo](#demo)
       * [Functionalities/Improvements](#functionalitiesimprovements)
@@ -31,11 +31,12 @@ The project utilizes Gazebo for simulating the environment, RViz for the graphic
 
 ## Requirements
 It is necessary to install the following softwares before any use:
-* ROS
-* OpenCV
-* Gazebo
-* YOLO
-* RVIZ
+* [ROS](http://wiki.ros.org/ROS/Installation)
+* [OpenCV] (https://pypi.org/project/opencv-python/) 
+* Gazebo (included with ROS)
+* [YOLO] (https://github.com/alexandrefch/yolov7-ros)
+* RVIZ (included with ROS)
+
 
 ## Ambient/apartment
 The apartment map is incluied with the project, above you can see the plant of the apartment for better compreention.
@@ -75,6 +76,10 @@ Save:
 ```
 roscd robutler_navigation/maps/map/ && rosrun map_server map_saver -f map
 ```
+
+## Demo
+
+[video](https://github.com/jotadateta) 
 
 
 ## Functionalities/Improvements
@@ -120,9 +125,10 @@ Here we can see the extraction of images of objects used to train the classifier
 # Authors
 
 - [@jotadateta](https://github.com/jotadateta) - joaopedrotomas@ua.pt 93366
-- [@Goncalo287](https://github.com/Goncalo287) - joaodamatias@ua.pt 93098
-- [@cmrsantos](https://github.com/cmrsantos) - joaodanielc@ua.pt 93439
-- [@joaof_2025](https://github.com/joaof_2025) - joaodanielc@ua.pt 93439 --verificar o teu link joao
+- [@Goncalo287](https://github.com/Goncalo287) - goncalo.anacleto@ua.pt 93394
+- [@cmrsantos](https://github.com/cmrsantos) - cmrsantos@ua.pt 92955
+- [@joaof_2025](https://github.com/JoaoF2025) - 
+joaolmf@ua.pt 93296
 
  
 # Reference
