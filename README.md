@@ -14,7 +14,7 @@ Index
       * [Requirements](#requirements)
       * [Ambient/apartment](#Ambient/apartment)
       * [Usage](#usage)
-      * [Demo](#demo)
+      * [Explained](#Explained)
       * [Functionalities/Improvements](#functionalitiesimprovements)
   * [Authors](#authors)
   * [Reference](#reference)
@@ -77,8 +77,12 @@ Save new map:
 roscd robutler_navigation/maps/map/ && rosrun map_server map_saver -f map
 ```
 
-## Demo
+## Explained
+### Interface
 
+
+
+### Demo
 In this demonstration the group tries to demonstrate all the concepts represented below.
 
 [video](https://github.com/jotadateta) 
@@ -89,39 +93,34 @@ In this demonstration the group tries to demonstrate all the concepts represente
 - [x] Robot movimentation:
     - [x] using manual mode
     - [x] using diferent rooms
-    - [x] using autonomous XY coordenates
+    - [x] using autonomous XY coordenates(input box)
     - [x] using autonomous information eg:"Kitchen"
+    - [x] using autonomous searching
     - [ ] using keyboard
 - [x] Perception:
     - [x] find color spheres
     - [x] find objects
     - [x] find persons
-    - [ ] meter outra cena
+    - [ ] Count different objets(with same properties)
 - [x] Objects:
     - [x] spawn objects random
     - [x] spawn specified object at random
-    - [ ] orientation 
+    - [x] spawn specified object at list of spots
+    - [ ] spawn objects at click 
 
 ## Missions
 
 - [x] Move to specified rooms
-- [x] Robot search for spheres in selected room
-- [x] Robot search for objects in selected room
-- [x] Robot search for someone in selected room
-- [x] Robot verify if table is cleaned or not
+- [x] Robot search for spheres in selected room/everywhere
+- [x] Robot search for objects in selected room/everywhere
+- [x] Robot search for someone in selected room/everywhere
+- [ ] Robot verify if table is cleaned or not
 - [x] Robot photograph selected room
 - [x] Robot search for someone in the appartement
-- [x] Robot count the number of blue boxes in the appartment
-- [x] escrever o que temos.
-- [ ] escrever umas duas que nao tenhamos 
-- [ ] escrever umas duas que nao tenhamos
+- [ ] Robot count the number of blue boxes in the appartment(50%)
+- [ ] Robot touch objects.
+- [ ] Robot move objects   
     
-
- The color information will appear on the terminal where you run the program, as an approximation to the CSS21 list of colors as well as the actual RGB value. <br/>
- The dimensions will appear as a tuple such as (width, height) in meters.
-
-Here we can see the extraction of images of objects used to train the classifier: <br/>
-![image](https://user-images.githubusercontent.com/92520749/215945372-cfd947f6-9fe8-4e6c-9573-e4fdfc92bb5e.png)
 
 
 # Authors
