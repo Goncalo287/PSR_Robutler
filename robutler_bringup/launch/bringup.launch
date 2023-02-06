@@ -25,9 +25,6 @@
     <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering" args="-t" output="screen"/>
     <!-- <node pkg="robutler_bringup" type="teleop.py" name="teleop"  output="screen"/> -->
 
-    <!-- Start Camera -->
-    <node pkg="robutler_bringup" type="camera.py" name="camera"/>
-
     <!-- Mapping -->
     <include file="$(find robutler_navigation)/launch/localization.launch">
         <arg name="initial_pose_x" value="$(arg x_pos)"/>
@@ -35,8 +32,10 @@
     </include>
     <include file="$(find robutler_navigation)/launch/move_base.launch"/>
 
+    <!-- Yolov7 -->
+    <include file="$(find yolov7_ros)/launch/yolov7.launch"/>
+
     <!-- Right click menu -->
     <node pkg="robutler_bringup" type="menu.py" name="move_menu" />
 
-    <include file="$(find yolov7_ros)/launch/yolov7.launch"/>
 </launch>

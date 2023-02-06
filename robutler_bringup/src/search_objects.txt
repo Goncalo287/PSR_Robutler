@@ -1,0 +1,6 @@
+all_spheres
+sphere_red
+sphere_violet
+laptop
+bottle
+person

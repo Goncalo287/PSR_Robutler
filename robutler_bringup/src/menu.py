@@ -26,7 +26,7 @@ from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 # Image
-from camera import detect_spheres
+from camera import detectSpheres
 from std_msgs.msg import String
 
 from sensor_msgs.msg import Image
@@ -184,15 +184,12 @@ def moveCallback( _ , goal, goal_dict, wait=False):
     if isinstance(goal, str):
         try:
             goal = goal.lower()
-            goal_x = goal_dict[goal]["x"]
-            goal_y = goal_dict[goal]["y"]
-            goal_r = goal_dict[goal]["r"]
+            goal_x = float(goal_dict[goal]["x"])
+            goal_y = float(goal_dict[goal]["y"])
+            goal_r = float(goal_dict[goal]["r"])
+            valid_coords = True
 
-            if isinstance(goal_x, float) and isinstance(goal_y, float) and isinstance(goal_r, float):
-                valid_coords = True
-            else:
-                valid_coords = False
-        except KeyError:
+        except KeyError or ValueError:
             valid_coords = False
     else:
         valid_coords = False
@@ -211,46 +208,25 @@ def moveCallback( _ , goal, goal_dict, wait=False):
                         color = [0.8, 0.2, 0.2])
 
 
-def stopCallback( _ ):
+def setSpeedCallback( _ , linear, angular, text):
     """
-    Called when the user clicks the "Stop" button. Cancel goal
+    Called when the user clicks the "Stop" button. Cancel goal + stop
     """
 
     client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
     client.cancel_all_goals()
-    makeTextMarker( text = "Goal canceled",
-                    color = [0.8, 0.2, 0.2])
-
-
-def spinCallback( _ ):
-    """
-    Do a full rotation - used when location is slighly off
-    """
 
     publisher = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-
     twist = Twist()
-    twist.linear.x = 0
+    twist.linear.x = linear
+    twist.angular.z = angular
 
-    client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-    client.cancel_all_goals()
-
-    # Spin
-    makeTextMarker( text = "Spinning...",
-                    color = [0.2, 0.2, 0.8])
-
-    # Calculate spin duration from speed (rad/s)
-    rotation_speed = 0.75
-    time_end = rospy.get_rostime().secs + 2*math.pi/rotation_speed
-
+    time_end = rospy.get_rostime().secs + 0.5
     while rospy.get_rostime().secs < time_end:
-        twist.angular.z = rotation_speed
         publisher.publish(twist)
 
-    # Stop spinning
-    twist.angular.z = 0
-    publisher.publish(twist)
-    makeTextMarker(text = "Ready")
+    makeTextMarker( text = text,
+                    color = [0.2, 0.2, 0.8])
 
 
 def coordinatesCallback( _ ):
@@ -298,7 +274,7 @@ def coordinatesCallback( _ ):
                             color = [0.8, 0.2, 0.2] )
             return
 
-        makeTextMarker( text = "Moving to...\n{} / {} / {} rad".format(round(x,2), round(y,2), r),
+        makeTextMarker( text = "Moving to...\n{} / {} / {} rad".format(round(x,1), round(y,1), round(r,1)),
                         color = [0.3, 0.8, 0.3] )
 
         moveToPosition(x, y, r)
@@ -375,7 +351,7 @@ def searchObject(model_name):
                     color = [0.2, 0.2, 0.8])
 
     # Calculate spin duration from speed (rad/s)
-    rotation_speed = 0.75
+    rotation_speed = 0.5
     time_end = rospy.get_rostime().secs + 2*math.pi/rotation_speed
 
     # Spin while checking camera images
@@ -386,20 +362,14 @@ def searchObject(model_name):
         rospy.sleep(0.5)
         twist.angular.z = rotation_speed
         publisher.publish(twist)
-        
-        if model_name == "sphere_violet":
-            
-            img, success = detect_spheres(images["camera"], model_name)
+
+        # Check for colored spheres
+        if model_name in ["sphere_violet", "sphere_red", "all_spheres"]:
+            img, success = detectSpheres(images["camera"], model_name)
             if success:
                 images["object"] = img
                 break
 
-        elif model_name == "sphere_red":
-            img, success = detect_spheres(images["camera"], model_name)
-            if success:
-                images["object"] = img
-                break
-        
         # Check yolo labels
         elif model_name in ["laptop", "bottle", "person"]:
             if model_name in labels:
@@ -417,6 +387,7 @@ def searchObject(model_name):
     else:
         makeTextMarker( text = "Object not found!",
                         color = [0.8, 0.2, 0.2])
+    return success
 
 
 def searchCallback( _ , model_name, location, goal_dict = {}):
@@ -438,23 +409,47 @@ def searchCallback( _ , model_name, location, goal_dict = {}):
     elif location == 0:
         searchObject(model_name)
 
-    # Everywhere:
+    # Everywhere
     elif location == 1:
-        makeTextMarker( text = "Looking for \"{}\" everywhere".format(model_name),
+
+        # Get robot position
+        self_x = float(pose.position.x)
+        self_y = float(pose.position.y)
+
+        # Find nearest goal from saved locations
+        goal_list = list(goal_dict)
+        goal_name = goal_list[0]   # First location by default
+        min_distance = 99999
+
+        for goal in goal_dict.keys():
+            goal_x = float(goal_dict[goal]["x"])
+            goal_y = float(goal_dict[goal]["y"])
+            distance = math.sqrt((goal_x-self_x)**2+(goal_y-self_y)**2)
+
+            if distance < min_distance:
+                min_distance = distance
+                goal_name = goal
+
+        # Make new list of goals starting from the nearest one and
+        index = goal_list.index(goal_name)
+        length = len(goal_list)
+        goal_list *= 2
+        new_goals = goal_list[index:index+length]
+        locations_searched = 0
+
+        # Search in every location
+        for goal_name in new_goals:
+            locations_searched += 1
+            makeTextMarker( text = "Looking for \"{}\"...\nLocation {} / {}".format(model_name, locations_searched, len(new_goals)),
                         color = [0.2, 0.8, 0.2])
-
-        self_x = pose.position.x
-        self_y = pose.position.y
-        print(self_x, self_y)
-
-        # Find nearest point in saved_locations
-        # Move there
-        # Search
-        # Move to next point in list
-        # Search
-        # Repeat until stopped
-
-        # moveToPosition(1, 2, 3, wait=True)
+            moveCallback(0, goal=goal_name, goal_dict=goal_dict, wait=True)
+            success = searchObject(model_name)
+            if success:
+                break
+        
+        if not success:
+            makeTextMarker( text = "Object not found!",
+                            color = [0.8, 0.2, 0.2])
 
 
 def initMenu(menu_handler):
@@ -469,14 +464,21 @@ def initMenu(menu_handler):
         file_path =  path_this + "/saved_locations.json"
         goal_dict = readJsonFile(file_path)
     except FileNotFoundError:
-        exit("Error: saved_locations file not found")
+        exit("Error: saved_locations.json file not found")
 
     # Get objects dictionary from json file
     try:
         file_path = path_this + "/spawn_objects.json"
         object_dict = readJsonFile(file_path)
     except FileNotFoundError:
-        exit("Error: spawn_objects file not found")
+        exit("Error: spawn_objects.json file not found")
+
+    # Get search objects from txt file
+    try:
+        with open(path_this+"/search_objects.txt",'r') as file:
+            object_list = file.read().split("\n")
+    except FileNotFoundError:
+        exit("Error: search_objects.txt file not found")
 
     # Move to... coordinates/saved_location
     move_tab = menu_handler.insert( "Move to..." )
@@ -485,7 +487,7 @@ def initMenu(menu_handler):
     for goal in goal_dict.keys():
         menu_handler.insert(goal, parent=move_tab, callback=partial(moveCallback, goal = goal, goal_dict = goal_dict))
 
-    menu_handler.insert( "Stop", callback=stopCallback)
+    menu_handler.insert( "Stop", callback=partial(setSpeedCallback, linear=0, angular=0, text="Stopped"))
 
     # Spawn Object...
     spawn_tab = menu_handler.insert( "Spawn Object..." )
@@ -499,7 +501,7 @@ def initMenu(menu_handler):
 
     # Look for Object...
     search_tab = menu_handler.insert( "Look for Object..." )
-    for object_name in object_dict.keys():
+    for object_name in object_list:
 
         search_tab_2 = menu_handler.insert(object_name, parent=search_tab)
         menu_handler.insert("Here", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 0))
@@ -508,12 +510,12 @@ def initMenu(menu_handler):
         for goal in goal_dict.keys():
             menu_handler.insert(goal, parent=search_tab_3, callback=partial(searchCallback, model_name = object_name, location = goal, goal_dict = goal_dict))
 
-        menu_handler.insert("Everywhere", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 1))
+        menu_handler.insert("Everywhere", parent=search_tab_2, callback=partial(searchCallback, model_name = object_name, location = 1, goal_dict = goal_dict))
 
     # Other...
     other_tab = menu_handler.insert( "Other..." )
 
-    menu_handler.insert( "Spin", parent=other_tab, callback=spinCallback)
+    menu_handler.insert( "Spin", parent=other_tab, callback=partial(setSpeedCallback, linear=0, angular=0.75, text="Spinning..."))
 
 
 def positionCallback(msg):
@@ -548,15 +550,12 @@ def labelCallback(msg):
     label_str = msg.data
     global labels
     labels = label_str.split("\n")
-    #print(labels)
 
 
 def yoloCallback(msg):
     # Save image in yolo topic as opencv image
-    #print("ta a ser chamada")
     global images
-    #print(msg.encoding)
-    
+  
     try:
         images["yolo"] = bridge.imgmsg_to_cv2(msg, "8UC3")
         #images["yolo"] = bridge.imgmsg_to_cv2(msg, "bgr8")
