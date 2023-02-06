@@ -25,7 +25,7 @@ Index
 Introducing the Robutler project, a project initiated in the [PSR (Robotic Systems Programming)](linkPSR) class at the [university of aveiro](https://www.ua.pt/) in the [Master's degree in mechanical engineering](https://www.ua.pt/pt/curso/488). <br/>
 The goal of this project is to introduce students to the ROS (Robotic Operating System) communication system. By the end of the project, students acquired minimal but general competencies in using and communicating through the ROS system.
 
-![image](https://user-images.githubusercontent.com/92520749/215944005-0af835c8-5634-4e37-bc28-ef263991ea8d.png)
+![image](https://media.discordapp.net/attachments/1062801396921016373/1072259141466345502/image.png?width=1263&height=660)
 
 # The Project
 The project utilizes Gazebo for simulating the environment, RViz for the graphical interface, YOLO for object identification, and ROS for communication. These tools provide a comprehensive simulation platform that allows for accurate representation of the environment and efficient communication between different components. YOLO is used to identify objects within the simulation, while ROS acts as the underlying communication layer to facilitate communication between the various modules. Overall, the combination of these tools provides a powerful and flexible solution for simulating and analyzing complex systems.
@@ -79,8 +79,13 @@ roscd robutler_navigation/maps/map/ && rosrun map_server map_saver -f map
 
 ## Explained
 ### Interface
+* In the center of the image, there is a robot and a mapped apartment with a box, indicating its operational state. On the upper right, there is an image captured by the robot. On the lower right, there is an image processed by YOLO (You Only Look Once).
 
+![image](https://media.discordapp.net/attachments/1062801396921016373/1072259404155600977/Screenshot_from_2023-02-06_20-55-49.png?width=1215&height=660)
 
+* In this image, we can understand the RVIZ described above. On the right is an image using OpenCV. On the bottom right is the manual control of the robot. On the bottom left is Gazebo, which simulates the real environment.
+
+![image](https://media.discordapp.net/attachments/1062801396921016373/1072260532503052429/Screenshot_from_2023-02-06_21-00-15.png?width=1260&height=660)
 
 ### Demo
 In this demonstration the group tries to demonstrate all the concepts represented below.
