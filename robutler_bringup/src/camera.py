@@ -9,34 +9,63 @@ from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
 
-def detect_purple_sphere(img):
+def detect_spheres(img, color):
+    print(color)
+    
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Define the range of purple color in HSV color space
-    lower_purple = np.array([120, 50, 50])
-    upper_purple = np.array([140, 255, 255])
+    lower_purple = np.array([125, 50, 50])
+    upper_purple = np.array([135, 255, 255])
 
     # Threshold the image to get only purple color
-    mask = cv2.inRange(hsv, lower_purple, upper_purple)
+    mask_purple = cv2.inRange(hsv, lower_purple, upper_purple)
+
+    # Define the range of red color in HSV color space
+    lower_red = np.array([0, 50, 50])
+    upper_red = np.array([10, 255, 255])
+
+    # Threshold the image to get only red color
+    mask_red = cv2.inRange(hsv, lower_red, upper_red)
+
+    # Combine the two masks
+    mask = cv2.bitwise_or(mask_purple, mask_red)
+
+    # Smooth out the mask using morphological operations
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
     # Find the contours in the thresholded image
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Draw a circle around the detected sphere
+    # Draw a circle around the detected spheres
     spheres_detected = False
     for contour in contours:
+        if cv2.contourArea(contour) < 200:
+            continue
+
         (x, y), radius = cv2.minEnclosingCircle(contour)
         center = (int(x), int(y))
         radius = int(radius)
-        img = cv2.circle(img, center, radius, (0, 255, 0), 2)
+
+        # Check if the sphere is purple or red
+        if cv2.countNonZero(mask_purple[int(y) - int(radius):int(y) + int(radius), int(x) - int(radius):int(x) + int(radius)]) > cv2.countNonZero(mask_red[int(y) - int(radius):int(y) + int(radius), int(x) - int(radius):int(x) + int(radius)]):
+            color = (0, 255, 0)
+            text = "Here's a purple sphere"
+        else:
+            color = (0, 0, 255)
+            text = "Here's a red sphere"
+
+        img = cv2.circle(img, center, radius, color, 2)
         spheres_detected = True
 
     if spheres_detected:
         # Display image with message
-        cv2.putText(img, "Here's a purple sphere", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(img, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     return img, spheres_detected
+
 
 def image_callback(msg):
     # Convert image to opencv
@@ -46,78 +75,16 @@ def image_callback(msg):
         print('Failed to convert image:', e)
         return
 
-    # Detect purple sphere
-    img = detect_purple_sphere(img)
+    # Detect spheres
+    img = detect_spheres(img)
     cv2.imshow("Robutler's Camera", img)
 
-    # Detect objects
-    # img = image_classification(img)
-    # cv2.imshow("Jota Tela", img)
-    
     # Keyboard inputs
     key = cv2.waitKey(10) & 0xFF
 
     if key == ord('q') or key == 27:    # Q or ESC to exit
         pass
 
-# def image_classification(img):
-    
-#     net = cv2.dnn.readNet("/home/jota/catkin_ws/src/YOLO/yolov3.weights", "/home/jota/catkin_ws/src/YOLO/yolov3.cfg")
-#     classes = []
-#     # with open("/home/jota/catkin_ws/src/YOLO/coco.names", "r") as f:
-#     #     classes = [line.strip() for line in f.readlines()]
-#     classes = open("/home/jota/catkin_ws/src/YOLO/coco.names").read().strip().split('\n')
-#     #print(classes)
-    
-#     # determine the output layer
-#     ln = net.getLayerNames()
-#     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-    
-#     colors = np.random.uniform(0, 255, size=(len(classes), 3))
-    
-#     # Loading image
-#     img = cv2.resize(img, None, fx=0.4, fy=0.4)
-#     height, width, channels = img.shape
-    
-#     # Detecting objects
-#     blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
-#     net.setInput(blob)
-#     outs = net.forward(output_layers)
-    
-#     # Showing informations on the screen
-#     class_ids = []
-#     confidences = []
-#     boxes = []
-#     for out in outs:
-#         for detection in out:
-#             scores = detection[5:]
-#             class_id = np.argmax(scores)
-#             confidence = scores[class_id]
-#             if confidence > 0.5:
-#                 # Object detected
-#                 center_x = int(detection[0] * width)
-#                 center_y = int(detection[1] * height)
-#                 w = int(detection[2] * width)
-#                 h = int(detection[3] * height)
-#                 # Rectangle coordinates
-#                 x = int(center_x - w / 2)
-#                 y = int(center_y - h / 2)
-#                 boxes.append([x, y, w, h])
-#                 confidences.append(float(confidence))
-#                 class_ids.append(class_id)
-
-#     indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
-    
-#     font = cv2.FONT_HERSHEY_PLAIN
-#     for i in range(len(boxes)):
-#         if i in indexes:
-#             x, y, w, h = boxes[i]
-#             label = str(classes[class_ids[i]])
-#             color = colors[i]
-#             cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
-#             cv2.putText(img, label, (x, y + 30), font, 3, color, 3)
-    
-#     return img
 
 def main():
     # Image subscriber

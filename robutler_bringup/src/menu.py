@@ -12,6 +12,7 @@ from interactive_markers.interactive_marker_server import *
 from interactive_markers.menu_handler import *
 from visualization_msgs.msg import *
 
+
 # Move to goal
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -25,7 +26,8 @@ from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 # Image
-from camera import detect_purple_sphere
+from camera import detect_spheres
+from std_msgs.msg import String
 
 from sensor_msgs.msg import Image
 import cv2
@@ -36,7 +38,8 @@ from cv_bridge import CvBridge, CvBridgeError
 server = None
 pose = None
 bridge = CvBridge()
-images = {"camera": None, "object": None}
+images = {"camera": None, "object": None, "yolo": None}
+labels = []
 
 
 def readJsonFile(path):
@@ -377,29 +380,32 @@ def searchObject(model_name):
 
     # Spin while checking camera images
     global images
+    global labels
     success = False
     while rospy.get_rostime().secs < time_end:
         rospy.sleep(0.5)
         twist.angular.z = rotation_speed
         publisher.publish(twist)
-
+        
         if model_name == "sphere_violet":
-            img, success = detect_purple_sphere(images["camera"])
+            
+            img, success = detect_spheres(images["camera"], model_name)
             if success:
                 images["object"] = img
                 break
 
         elif model_name == "sphere_red":
-            pass
-
-        elif model_name == "laptop":
-            pass
-
-        elif model_name == "bottle":
-            pass
-
-        elif model_name == "person":
-            pass
+            img, success = detect_spheres(images["camera"], model_name)
+            if success:
+                images["object"] = img
+                break
+        
+        # Check yolo labels
+        elif model_name in ["laptop", "bottle", "person"]:
+            if model_name in labels:
+                images["object"] = images["yolo"]
+                success = True
+                break
 
     # Stop spinning
     twist.angular.z = 0
@@ -537,6 +543,28 @@ def imageCallback(msg):
         cv2.waitKey(5000)
 
 
+def labelCallback(msg):
+    # Save label list as global variable
+    label_str = msg.data
+    global labels
+    labels = label_str.split("\n")
+    #print(labels)
+
+
+def yoloCallback(msg):
+    # Save image in yolo topic as opencv image
+    #print("ta a ser chamada")
+    global images
+    #print(msg.encoding)
+    
+    try:
+        images["yolo"] = bridge.imgmsg_to_cv2(msg, "8UC3")
+        #images["yolo"] = bridge.imgmsg_to_cv2(msg, "bgr8")
+    except CvBridgeError as e:
+        print('Failed to convert image:', e)
+        return
+
+
 def main():
 
     # Initialize
@@ -554,6 +582,8 @@ def main():
 
     rospy.Subscriber('/odom', Odometry, positionCallback)
     rospy.Subscriber("/camera/rgb/image_raw", Image, imageCallback)
+    rospy.Subscriber("/yolov7/yolov7_label", String, labelCallback)
+    rospy.Subscriber("/yolov7/yolov7/visualization", Image, yoloCallback)
 
 
     # Spin until ctrl+c (can't use rospy.spin because of opencv)
