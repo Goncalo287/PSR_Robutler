@@ -9,9 +9,11 @@ from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
 
-def detect_spheres(img, color):
+def detectSpheres(img, color):
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    contours_red = []
 
     # Threshold the image to get only desired color
     if color == "sphere_violet":
@@ -69,7 +71,7 @@ def detect_spheres(img, color):
 
         if color == "sphere_violet":
             color = (0, 255, 0)
-            text = "Here's a purple sphere"
+            text = "Here's a violet sphere"
         elif color == "sphere_red":
             color = (0, 255, 0)
             text = "Here's a red sphere"
@@ -91,7 +93,7 @@ def detect_spheres(img, color):
                 elif red_sphere_count == 1 and purple_sphere_count == 1:
                     text = "Here is a red and a purple sphere "
                 else:
-                    text = "Here is " + str(red_sphere_count) + " red spheres and " + str(purple_sphere_count) + " purple spheres "
+                    text = "Here is " + str(red_sphere_count) + " red and " + str(purple_sphere_count) + " violet spheres"
                 
 
         img = cv2.circle(img, center, radius, color, 2)
@@ -113,7 +115,7 @@ def image_callback(msg):
         return
 
     # Detect spheres
-    img, sucess = detect_spheres(img,color= None)
+    img, sucess = detectSpheres(img,color= None)
     cv2.imshow("Robutler's Camera", img)
 
     # Keyboard inputs
