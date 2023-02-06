@@ -22,7 +22,8 @@ Index
 
 # Description
 
-Introducing the Robutler project, a project initiated in the [PSR (Robotic Systems Programming)](linkPSR) class at the [university of aveiro](https://www.ua.pt/) in the [Master's degree in mechanical engineering](https://www.ua.pt/pt/curso/488). The goal of this project is to introduce students to the ROS (Robotic Operating System) communication system. By the end of the project, students acquired minimal but general competencies in using and communicating through the ROS system.
+Introducing the Robutler project, a project initiated in the [PSR (Robotic Systems Programming)](linkPSR) class at the [university of aveiro](https://www.ua.pt/) in the [Master's degree in mechanical engineering](https://www.ua.pt/pt/curso/488). <br/>
+The goal of this project is to introduce students to the ROS (Robotic Operating System) communication system. By the end of the project, students acquired minimal but general competencies in using and communicating through the ROS system.
 
 ![image](https://user-images.githubusercontent.com/92520749/215944005-0af835c8-5634-4e37-bc28-ef263991ea8d.png)
 
@@ -30,13 +31,12 @@ Introducing the Robutler project, a project initiated in the [PSR (Robotic Syste
 The project utilizes Gazebo for simulating the environment, RViz for the graphical interface, YOLO for object identification, and ROS for communication. These tools provide a comprehensive simulation platform that allows for accurate representation of the environment and efficient communication between different components. YOLO is used to identify objects within the simulation, while ROS acts as the underlying communication layer to facilitate communication between the various modules. Overall, the combination of these tools provides a powerful and flexible solution for simulating and analyzing complex systems.
 
 ## Requirements
-It is necessary to install the following softwares before any use:
+It is necessary to install the following resources before any use:
 * [ROS](http://wiki.ros.org/ROS/Installation)
-* [OpenCV] (https://pypi.org/project/opencv-python/) 
+* [OpenCV](https://pypi.org/project/opencv-python/) 
 * Gazebo (included with ROS)
-* [YOLO] (https://github.com/alexandrefch/yolov7-ros)
+* [YOLO](https://github.com/alexandrefch/yolov7-ros)
 * RVIZ (included with ROS)
-
 
 ## Ambient/apartment
 The apartment map is incluied with the project, above you can see the plant of the apartment for better compreention.
@@ -52,7 +52,7 @@ The apartment map is incluied with the project, above you can see the plant of t
     git clone https://github.com/aws-robotics/aws-robomaker-small-house-world
     git clone https://github.com/aws-robotics/aws-robomaker-hospital-world
 ```
-* *Dont forget to compile with catkin_make after this installation.*
+*Dont forget to compile with catkin_make after this installation.*
 
 
 ## Usage
@@ -68,16 +68,18 @@ roslaunch robutler_bringup bringup.launch
 ```
 
 ### Edit saved map
-Start:
+Start editor:
 ```
 rosrun gmapping slam_gmapping scan:=/scan _base_frame:=base_footprint
 ```
-Save:
+Save new map:
 ```
 roscd robutler_navigation/maps/map/ && rosrun map_server map_saver -f map
 ```
 
 ## Demo
+
+In this demonstration the group tries to demonstrate all the concepts represented below.
 
 [video](https://github.com/jotadateta) 
 
