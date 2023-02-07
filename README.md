@@ -39,14 +39,14 @@ It is necessary to install the following resources before any use:
 * RVIZ (included with ROS)
 
 ## Ambient/apartment
-The apartment map is incluied with the project, above you can see the plant of the apartment for better compreention.
+The apartment map is incluied with the project, above you can see the plant of the apartment for better comprehention.
 [apartment repository](https://github.com/miguelriemoliveira/psr_22-23/tree/master/TrabalhoRobutler).
 
 <p align="center">
   <img src="https://github.com/miguelriemoliveira/psr_22-23/blob/master/TrabalhoRobutler/docs/floorplan.jpg?raw=true">
 </p>
 
-* For the furniture you need to install two package:
+* For the furniture you need to install two packages:
 ```
     cd catkin_ws/src
     git clone https://github.com/aws-robotics/aws-robomaker-small-house-world
@@ -101,7 +101,7 @@ In this demonstration the group tries to demonstrate all the concepts represente
     - [x] using autonomous XY coordenates(input box)
     - [x] using autonomous information eg:"Kitchen"
     - [x] using autonomous searching
-    - [ ] using keyboard
+    - [x] using keyboard
 - [x] Perception:
     - [x] find color spheres
     - [x] find objects
@@ -111,7 +111,7 @@ In this demonstration the group tries to demonstrate all the concepts represente
     - [x] spawn objects random
     - [x] spawn specified object at random
     - [x] spawn specified object at list of spots
-    - [ ] spawn objects at click 
+    - [ ] spawn objects at mouse coordinates
 
 ## Missions
 
