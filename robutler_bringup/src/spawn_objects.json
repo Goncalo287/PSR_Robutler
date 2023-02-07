@@ -180,20 +180,29 @@
         }
 
     ],
-    "person_standing": [
-
+    "MaleVisitorOnPhone": [
         {
-            "position": [ -2.30, -2.35, 0.8 ],
-            "orientation": [ 0, 0, 0, 1 ],
-            "name": ""
+            "position": [ -4.794533, 0.081701, 0.0 ],
+            "orientation": [ 0, 0, -1.773831, 1 ],
+            "name": "kitchen"
         },{
-            "position": [ -2.30, -2.35, 0.8 ],
+            "position": [ 0.400401, 5.366367, 0.0 ],
+            "orientation": [ 0, 0, -0.814091, 1 ],
+            "name": "office"
+        }
+    ],
+    "FemaleVisitor": [
+        {
+            "position": [ -4.255602, -1.904441, 0.0 ],
+            "orientation": [ 0, 0, -1.660829, 1 ],
+            "name": "kitchen"
+        }
+    ],
+    "VisitorKidSit": [
+        {
+            "position": [ -6.355874, 3.830464, 0.170111 ],
             "orientation": [ 0, 0, 0, 1 ],
-            "name": ""
-        },{
-            "position": [ -2.30, -2.35, 0.8 ],
-            "orientation": [ 0, 0, 0, 1 ],
-            "name": ""
+            "name": "large_bedroom"
         }
     ]
 }
